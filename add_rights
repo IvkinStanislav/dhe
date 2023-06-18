@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+getent group uinput > /dev/null  || groupadd uinput
+usermod -aG input $USER
+usermod -aG uinput $USER
+
+FILE=/etc/udev/rules.d/dhe.rules
+if [[ -f "$FILE" ]]; then
+    echo "$FILE exists."
+else
+    touch $FILE
+    echo 'KERNEL=="uinput", MODE="0660", GROUP="uinput", OPTIONS+="static_node=uinput"' > $FILE
+fi

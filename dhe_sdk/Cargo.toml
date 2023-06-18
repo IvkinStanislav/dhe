@@ -1,0 +1,14 @@
+[package]
+name = "dhe_sdk"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+evdev = { version = "0.12.1", features = ["tokio"] }
+mio = "0.8.7"
+reqwest = "0.11"
+scraper = "0.16.0"
+strum = { version = "0.24", features = ["derive"] }
+thiserror = "1.0.38"
+tracing = { workspace = true }
+tracing-subscriber = "0.3.17"
