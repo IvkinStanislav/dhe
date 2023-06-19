@@ -6,7 +6,8 @@ use dhe_sdk::{
     translate::translate,
 };
 use notify_rust::Notification;
-use std::error::Error;
+use tokio::time::sleep;
+use std::{error::Error, time::Duration};
 
 const TRANSLATE_TO_NOTIFY_ACTION: &str = "TRANSLATE_TO_NOTIFY";
 const TRANSLATE_TO_PASTE_ACTION: &str = "TRANSLATE_TO_PASTE";
@@ -21,7 +22,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     listener.register_action(TRANSLATE_TO_PASTE_ACTION, &[LAlt, W]);
 
     let mut emulator = KeyboardEmulator::new()?;
-    let mut clipboard = Clipboard::new().unwrap();
+    let mut clipboard = Clipboard::new()?;
 
     loop {
         if let Some(action) = listener.get_action()? {
@@ -40,15 +41,13 @@ async fn translate_to_notify_action(clipboard: &mut Clipboard) -> Result<(), Box
     let text = clipboard
         .get()
         .clipboard(LinuxClipboardKind::Primary)
-        .text()
-        .unwrap();
+        .text()?;
     let text = translate(&text, Language::En, Language::Ru).await?;
     Notification::new()
         .summary("Dhe")
         .body(&text)
         .show_async()
-        .await
-        .unwrap();
+        .await?;
     Ok(())
 }
 
@@ -59,10 +58,21 @@ async fn translate_to_paste_action(
     let text = clipboard
         .get()
         .clipboard(LinuxClipboardKind::Primary)
-        .text()
-        .unwrap();
+        .text()?;
     let text = translate(&text, Language::Ru, Language::En).await?;
-    clipboard.set_text(text).unwrap();
+
+    let clipboard_image = clipboard.get_image().ok();
+    let clipboard_text = clipboard.get_text().ok();
+
+    clipboard.set_text(text)?;
     emulator.ctrl_v()?;
+    sleep(Duration::from_millis(10)).await;
+    if let Some(clipboard_image) = clipboard_image {
+        clipboard.set_image(clipboard_image)?;
+    }
+    if let Some(clipboard_text) = clipboard_text {
+        clipboard.set_text(clipboard_text)?;
+    }
+
     Ok(())
 }
