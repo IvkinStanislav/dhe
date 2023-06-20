@@ -2,8 +2,8 @@
 set -e
 
 getent group uinput > /dev/null  || groupadd uinput
-usermod -aG input $USER
-usermod -aG uinput $USER
+usermod -aG input $SUDO_USER
+usermod -aG uinput $SUDO_USER
 
 FILE=/etc/udev/rules.d/dhe.rules
 if [[ -f "$FILE" ]]; then

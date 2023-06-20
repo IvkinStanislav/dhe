@@ -66,7 +66,7 @@ async fn translate_to_paste_action(
 
     clipboard.set_text(text)?;
     emulator.ctrl_v()?;
-    sleep(Duration::from_millis(10)).await;
+    sleep(Duration::from_millis(50)).await;
     if let Some(clipboard_image) = clipboard_image {
         clipboard.set_image(clipboard_image)?;
     }
