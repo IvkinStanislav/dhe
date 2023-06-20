@@ -2,6 +2,7 @@ pub mod keyboard;
 pub mod language;
 pub mod translate;
 
+use language::LanguageError;
 use thiserror::Error;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
@@ -11,6 +12,8 @@ use crate::translate::TranslateError;
 
 #[derive(Error, Debug)]
 pub enum DheError {
+    #[error("language error: {0}")]
+    Language(LanguageError),
     #[error("translate error: {0}")]
     Translate(TranslateError),
     #[error("keyboard error: {0}")]
