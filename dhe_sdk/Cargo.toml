@@ -9,7 +9,7 @@ lingua = { version = "1.5.0", default-features = false, features = ["russian", "
 mio = "0.8.7"
 reqwest = "0.11"
 scraper = "0.16.0"
-strum = { version = "0.24", features = ["derive"] }
-thiserror = "1.0.38"
+strum = { workspace = true }
+thiserror = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = "0.3.17"
