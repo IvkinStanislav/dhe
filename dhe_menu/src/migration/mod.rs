@@ -8,9 +8,9 @@ pub enum Dish {
     Table,
     Id,
     Name,
-    Period,
+    Periods,
+    Amount,
     Part,
-    AmountDays,
 }
 
 #[derive(Iden, EnumIter)]

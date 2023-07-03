@@ -22,13 +22,9 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Dish::Name).string().unique_key().not_null())
-                    .col(
-                        ColumnDef::new(Dish::Period)
-                            .enumeration(PeriodType::Table, PeriodType::iter().skip(1))
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(Dish::Periods).tiny_unsigned().not_null())
+                    .col(ColumnDef::new(Dish::Amount).tiny_unsigned().not_null())
                     .col(ColumnDef::new(Dish::Part).tiny_unsigned().not_null())
-                    .col(ColumnDef::new(Dish::AmountDays).tiny_unsigned().not_null())
                     .to_owned(),
             )
             .await?;

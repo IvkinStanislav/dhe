@@ -1,4 +1,4 @@
-use std::{str::FromStr, sync::Arc};
+use std::sync::Arc;
 
 use axum::{
     extract::{Path, State},
@@ -11,16 +11,16 @@ use crate::{
     db::CorruptedDataError,
     entity::dish,
     migration,
-    rest::{error::HttpError, PeriodType},
+    rest::{error::HttpError, PeriodSet, PeriodType},
     state::AppState,
 };
 
 #[derive(Deserialize, Serialize)]
 pub struct Dish {
     pub name: String,
-    pub period: PeriodType,
+    pub periods: Vec<PeriodType>,
+    pub amount: u8,
     pub part: u8,
-    pub amount_days: u8,
 }
 
 impl TryFrom<dish::Model> for Dish {
@@ -36,29 +36,30 @@ impl TryFrom<dish::Model> for Dish {
                 column,
             )
         };
+
         Ok(Dish {
             name: model.name,
-            period: PeriodType::from_str(&model.period)
-                .map_err(|_| err_creator("period".to_string()))?,
+            periods: PeriodSet(model.periods).into(),
+            amount: model
+                .amount
+                .try_into()
+                .map_err(|_| err_creator("amount_days".to_string()))?,
             part: model
                 .part
                 .try_into()
                 .map_err(|_| err_creator("part".to_string()))?,
-            amount_days: model
-                .amount_days
-                .try_into()
-                .map_err(|_| err_creator("amount_days".to_string()))?,
         })
     }
 }
 
 impl From<Dish> for dish::ActiveModel {
     fn from(value: Dish) -> Self {
+        let period_set = PeriodSet::from(value.periods.as_ref());
         dish::ActiveModel {
             name: Set(value.name),
-            period: Set(value.period.to_string()),
+            periods: Set(period_set.0),
+            amount: Set(value.amount as i32),
             part: Set(value.part as i32),
-            amount_days: Set(value.amount_days as i32),
             ..Default::default()
         }
     }
@@ -108,4 +109,38 @@ pub async fn delete_dish(
         .await?;
 
     Ok(())
+}
+
+#[derive(Deserialize, Serialize, Default)]
+pub struct DishStat {
+    pub count: usize,
+    pub breakfasts: usize,
+    pub lunches: usize,
+    pub dinners: usize,
+}
+
+pub async fn dish_stat(State(state): State<Arc<AppState>>) -> Result<Json<DishStat>, HttpError> {
+    let dishes: Result<Vec<Dish>, _> = dish::Entity::find()
+        .all(&state.db_conn)
+        .await?
+        .into_iter()
+        .map(|m| m.try_into())
+        .collect();
+
+    let mut dish_stat = DishStat::default();
+    let dishes = dishes?;
+    dish_stat.count = dishes.len();
+
+    for dish in dishes {
+        for period in dish.periods {
+            use PeriodType::*;
+            match period {
+                Breakfast => dish_stat.breakfasts += 1,
+                Lunch => dish_stat.lunches += 1,
+                Dinner => dish_stat.dinners += 1,
+            }
+        }
+    }
+
+    Ok(Json(dish_stat))
 }
