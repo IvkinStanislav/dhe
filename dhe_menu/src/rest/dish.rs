@@ -15,12 +15,11 @@ use crate::{
     state::AppState,
 };
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 pub struct Dish {
     pub name: String,
     pub periods: Vec<PeriodType>,
     pub amount: u8,
-    pub part: u8,
 }
 
 impl TryFrom<dish::Model> for Dish {
@@ -44,10 +43,6 @@ impl TryFrom<dish::Model> for Dish {
                 .amount
                 .try_into()
                 .map_err(|_| err_creator("amount_days".to_string()))?,
-            part: model
-                .part
-                .try_into()
-                .map_err(|_| err_creator("part".to_string()))?,
         })
     }
 }
@@ -59,7 +54,6 @@ impl From<Dish> for dish::ActiveModel {
             name: Set(value.name),
             periods: Set(period_set.0),
             amount: Set(value.amount as i32),
-            part: Set(value.part as i32),
             ..Default::default()
         }
     }

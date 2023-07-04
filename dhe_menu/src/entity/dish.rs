@@ -10,7 +10,6 @@ pub struct Model {
     pub name: String,
     pub periods: i32,
     pub amount: i32,
-    pub part: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -10,7 +10,6 @@ pub enum Dish {
     Name,
     Periods,
     Amount,
-    Part,
 }
 
 #[derive(Iden, EnumIter)]

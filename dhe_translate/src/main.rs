@@ -8,13 +8,14 @@ use dhe_sdk::{
 use notify_rust::Notification;
 use std::{error::Error, time::Duration};
 use tokio::time::sleep;
+use tracing::Level;
 
 const TRANSLATE_TO_NOTIFY_ACTION: &str = "TRANSLATE_TO_NOTIFY";
 const TRANSLATE_TO_PASTE_ACTION: &str = "TRANSLATE_TO_PASTE";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    setup_logs();
+    setup_logs(Level::INFO);
 
     let mut listener = KeyboardListener::new()?;
     use Key::*;

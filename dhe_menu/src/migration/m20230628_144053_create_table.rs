@@ -24,7 +24,6 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Dish::Name).string().unique_key().not_null())
                     .col(ColumnDef::new(Dish::Periods).tiny_unsigned().not_null())
                     .col(ColumnDef::new(Dish::Amount).tiny_unsigned().not_null())
-                    .col(ColumnDef::new(Dish::Part).tiny_unsigned().not_null())
                     .to_owned(),
             )
             .await?;

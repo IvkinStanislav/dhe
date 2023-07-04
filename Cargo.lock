@@ -843,12 +843,14 @@ dependencies = [
  "dhe_sdk",
  "dhe_sdk_macros",
  "dirs",
+ "rand 0.8.5",
  "sea-orm",
  "sea-orm-migration",
  "serde",
  "strum 0.24.1",
  "thiserror",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -883,6 +885,7 @@ dependencies = [
  "dhe_sdk_macros",
  "notify-rust",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

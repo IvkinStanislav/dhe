@@ -21,10 +21,8 @@ pub enum DheError {
 }
 
 /// Launching the logging system.
-pub fn setup_logs() {
-    let subscriber = FmtSubscriber::builder()
-        .with_max_level(Level::INFO)
-        .finish();
+pub fn setup_logs(level: Level) {
+    let subscriber = FmtSubscriber::builder().with_max_level(level).finish();
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 }

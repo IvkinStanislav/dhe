@@ -8,4 +8,5 @@ arboard = "3.2.0"
 dhe_sdk = { path = "../dhe_sdk" }
 dhe_sdk_macros = { path = "../dhe_sdk_macros" }
 notify-rust = "4.8.0"
+tracing = { workspace = true }
 tokio = { workspace = true }

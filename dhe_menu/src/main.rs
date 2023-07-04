@@ -8,7 +8,7 @@ mod state;
 use std::{error::Error, sync::Arc};
 
 use axum::Server;
-use config::{DB_NAME, SERVER_ADDRESS};
+use config::{DB_NAME, LOG_LEVEL, SERVER_ADDRESS};
 use dhe_sdk::setup_logs;
 use migration::Migrator;
 use rest::create_router;
@@ -17,7 +17,7 @@ use state::{AppState, StateConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    setup_logs();
+    setup_logs(LOG_LEVEL);
 
     let db_dir = dirs::home_dir()
         .and_then(|p| p.to_str().map(|p| p.to_string()))

@@ -21,7 +21,9 @@ use crate::{
     state::AppState,
 };
 
-#[derive(Deserialize, Serialize, strum::Display, strum::EnumString, strum::EnumIter)]
+#[derive(
+    Deserialize, Serialize, strum::Display, strum::EnumString, strum::EnumIter, Clone, Copy, Debug,
+)]
 #[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "snake_case")]
 pub enum PeriodType {
@@ -80,6 +82,6 @@ pub fn create_router(state: Arc<AppState>) -> Router {
     Router::new()
         .nest("/dish", dish_router)
         .nest("/dishes_scheme", dishes_scheme_router)
-        .route("/menu", get(get_menu))
+        .route("/menu/:amount", get(get_menu))
         .with_state(state)
 }
