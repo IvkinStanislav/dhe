@@ -9,5 +9,6 @@ members = [
 [workspace.dependencies]
 strum = { version = "0.24", features = ["derive"] }
 thiserror = "1.0.38"
+time = { version = "0.3.22", features = ["formatting", "parsing"] }
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1.37"

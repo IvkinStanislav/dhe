@@ -1,5 +1,9 @@
 use std::{error::Error, fmt::Display};
 
+use sea_orm::{Related, RelationDef, RelationTrait};
+
+use crate::entity::{dish, dish_product, product};
+
 #[derive(Debug)]
 pub struct CorruptedDataError {
     pub table: String,
@@ -24,3 +28,13 @@ impl Display for CorruptedDataError {
 }
 
 impl Error for CorruptedDataError {}
+
+impl Related<product::Entity> for dish::Entity {
+    fn to() -> RelationDef {
+        dish_product::Relation::Product.def()
+    }
+
+    fn via() -> Option<RelationDef> {
+        Some(dish_product::Relation::Dish.def().rev())
+    }
+}

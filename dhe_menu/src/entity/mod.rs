@@ -3,4 +3,8 @@
 pub mod prelude;
 
 pub mod dish;
+pub mod dish_product;
 pub mod dishes_scheme;
+pub mod menu;
+pub mod menu_data;
+pub mod product;

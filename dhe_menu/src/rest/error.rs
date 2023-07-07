@@ -13,6 +13,8 @@ pub enum HttpError {
     Db(#[from] DbErr),
     #[error("{0}")]
     CorruptedData(#[from] CorruptedDataError),
+    #[error("not found")]
+    NotFound,
 }
 
 impl IntoResponse for HttpError {

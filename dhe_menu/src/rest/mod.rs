@@ -2,11 +2,12 @@ mod dish;
 mod dishes_scheme;
 mod error;
 mod menu;
+mod product;
 
 use std::sync::Arc;
 
 use axum::{
-    routing::{delete, get, post},
+    routing::{delete, get, patch, post},
     Router,
 };
 use serde::{Deserialize, Serialize};
@@ -14,9 +15,13 @@ use strum::IntoEnumIterator;
 
 use crate::{
     rest::{
-        dish::{add_dish, delete_dish, dish_stat, get_dish, get_dishes},
-        dishes_scheme::{get_schemes, overwrite_schemes},
+        dish::{
+            add_dish, add_product_to_dish, delete_dish, delete_product_from_dish, dish_stat,
+            get_dish, get_dishes, update_dish,
+        },
+        dishes_scheme::{add_scheme, delete_scheme, get_schemes},
         menu::get_menu,
+        product::{add_product, delete_product, get_product, get_products, update_product},
     },
     state::AppState,
 };
@@ -33,12 +38,6 @@ pub enum PeriodType {
 }
 
 pub struct PeriodSet(pub i32);
-
-impl From<i32> for PeriodSet {
-    fn from(value: i32) -> Self {
-        Self(value)
-    }
-}
 
 impl From<&[PeriodType]> for PeriodSet {
     fn from(value: &[PeriodType]) -> Self {
@@ -73,14 +72,31 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         .route("/:name", get(get_dish))
         .route("/list", get(get_dishes))
         .route("/", post(add_dish))
+        .route("/:name", patch(update_dish))
         .route("/:name", delete(delete_dish))
-        .route("/stat", get(dish_stat));
+        .route("/stat", get(dish_stat))
+        .route(
+            "/product:dish_name/:product_name",
+            post(add_product_to_dish),
+        )
+        .route(
+            "/product:dish_name/:product_name",
+            delete(delete_product_from_dish),
+        );
+    let product_router = Router::new()
+        .route("/:name", get(get_product))
+        .route("/list", get(get_products))
+        .route("/", post(add_product))
+        .route("/:name", patch(update_product))
+        .route("/:name", delete(delete_product));
     let dishes_scheme_router = Router::new()
         .route("/", get(get_schemes))
-        .route("/", post(overwrite_schemes));
+        .route("/", post(add_scheme))
+        .route("/:id", delete(delete_scheme));
 
     Router::new()
         .nest("/dish", dish_router)
+        .nest("/product", product_router)
         .nest("/dishes_scheme", dishes_scheme_router)
         .route("/menu/:amount", get(get_menu))
         .with_state(state)

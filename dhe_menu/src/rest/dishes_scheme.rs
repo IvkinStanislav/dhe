@@ -1,7 +1,10 @@
 use std::{str::FromStr, sync::Arc};
 
-use axum::{extract::State, Json};
-use sea_orm::{EntityTrait, Set, TransactionTrait};
+use axum::{
+    extract::{Path, State},
+    Json,
+};
+use sea_orm::{EntityTrait, Set};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -82,19 +85,26 @@ pub async fn get_schemes(
     Ok(Json(schemes?))
 }
 
-pub async fn overwrite_schemes(
+pub async fn add_scheme(
     State(state): State<Arc<AppState>>,
-    Json(payload): Json<Vec<DishesScheme>>,
+    Json(payload): Json<DishesScheme>,
 ) -> Result<(), HttpError> {
-    let schemes: Vec<dishes_scheme::ActiveModel> =
-        payload.into_iter().map(|ds| ds.into()).collect();
+    let scheme: dishes_scheme::ActiveModel = payload.into();
 
-    let txn = state.db_conn.begin().await?;
-    dishes_scheme::Entity::delete_many().exec(&txn).await?;
-    dishes_scheme::Entity::insert_many(schemes)
-        .exec(&txn)
+    dishes_scheme::Entity::insert(scheme)
+        .exec(&state.db_conn)
         .await?;
-    txn.commit().await?;
+
+    Ok(())
+}
+
+pub async fn delete_scheme(
+    State(state): State<Arc<AppState>>,
+    Path(id): Path<u64>,
+) -> Result<(), HttpError> {
+    dishes_scheme::Entity::delete_by_id(id as i32)
+        .exec(&state.db_conn)
+        .await?;
 
     Ok(())
 }

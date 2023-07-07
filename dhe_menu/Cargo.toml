@@ -9,9 +9,10 @@ dhe_sdk = { path = "../dhe_sdk" }
 dhe_sdk_macros = { path = "../dhe_sdk_macros" }
 dirs = "5.0.1"
 rand = "0.8.5"
-sea-orm = { version = "0.11.3", features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros" ] }
+sea-orm = { version = "0.11.3", features = [ "sqlx-sqlite", "runtime-tokio-rustls", "macros", "with-time" ] }
 serde = "1.0.164"
 strum = { workspace = true }
+time = { workspace = true }
 tracing = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
