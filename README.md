@@ -4,9 +4,9 @@ Assistant to work with everyday simple tasks
 
 Tasks:
 
-1) `LeftAlt + Q`  - translation from English into Russian of the selected text and display of the translation in the notification
-2) `LeftAlt + W` -  translation from Russian into English of the selected text and pasting into the active text field
- 
+1) `LeftAlt + Q`  - translation from English into Russian (or vice versa) of the selected text and display of the translation in the notification
+2) `LeftAlt + W` -  translation from Russian into English (or vice versa) of the selected text and pasting into the active text field
+
 How to install:
 
 1) Install (or update) Rust
@@ -14,4 +14,4 @@ How to install:
 3) `sudo ./add_rights`
 4) Reboot
 5) `cargo build -r`
-6) `./target/release/dhe_node`
+6) `./target/release/dhe_translate`

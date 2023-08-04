@@ -10,7 +10,8 @@ use sea_orm::{
     QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
 use serde::{Deserialize, Serialize};
-use time::{format_description::well_known::Rfc3339, OffsetDateTime, PrimitiveDateTime};
+use time::{format_description::well_known::Rfc3339, OffsetDateTime};
+use tracing::info;
 
 use crate::{
     db::CorruptedDataError,
@@ -43,19 +44,21 @@ pub async fn get_menu(
         return Ok(Json(menu));
     };
 
+    info!("menu finding");
     let menu = menu::Entity::find().one(&state.db_conn).await?;
     let Some(menu) = menu else {
+        info!("menu not found in database");
         let menu = generate_menu(amount, &state.db_conn).await?;
         save_menu(&menu, &state.db_conn).await?;
         return Ok(Json(menu));
     };
 
-    let menu_week = PrimitiveDateTime::parse(&menu.date_time, &Rfc3339)
+    let menu_week = OffsetDateTime::parse(&menu.date_time, &Rfc3339)
         .unwrap()
         .iso_week();
-    let now = OffsetDateTime::now_utc();
-    let week = PrimitiveDateTime::new(now.date(), now.time()).iso_week();
+    let week = OffsetDateTime::now_utc().iso_week();
     if week > menu_week {
+        info!("saved menu is outdated");
         let menu = generate_menu(amount, &state.db_conn).await?;
         save_menu(&menu, &state.db_conn).await?;
         return Ok(Json(menu));
@@ -66,6 +69,7 @@ pub async fn get_menu(
 }
 
 async fn save_menu(menu: &Menu, db_conn: &DatabaseConnection) -> Result<(), HttpError> {
+    info!("save menu");
     let Menu {
         breakfasts,
         lunches,
@@ -85,19 +89,17 @@ async fn save_menu(menu: &Menu, db_conn: &DatabaseConnection) -> Result<(), Http
     menu_data::Entity::delete_many().exec(&txn).await?;
     menu::Entity::delete_many().exec(&txn).await?;
 
-    let now = OffsetDateTime::now_utc();
-    let date_time = PrimitiveDateTime::new(now.date(), now.time())
-        .format(&Rfc3339)
-        .unwrap();
+    let date_time = OffsetDateTime::now_utc().format(&Rfc3339).unwrap();
     let menu = menu::ActiveModel {
         date_time: Set(date_time),
         ..Default::default()
     };
     let menu = menu.insert(&txn).await?;
+    info!("save menu with id {}", menu.id);
 
     let mut menu_items = vec![];
     for (order, period, dish) in menu_dishes {
-        let dish_id: Option<u64> = dish::Entity::find()
+        let dish_id: Option<i32> = dish::Entity::find()
             .select_only()
             .column(dish::Column::Id)
             .filter(dish::Column::Name.eq(&dish.name))
@@ -107,12 +109,13 @@ async fn save_menu(menu: &Menu, db_conn: &DatabaseConnection) -> Result<(), Http
 
         menu_items.push(menu_data::ActiveModel {
             menu_id: Set(menu.id),
-            dish_id: Set(dish_id.unwrap() as i32),
+            dish_id: Set(dish_id.unwrap()),
             period: Set(period.to_string()),
             order: Set(order as i32),
             ..Default::default()
         })
     }
+    info!("save menu items with menu id {}", menu.id);
     menu_data::Entity::insert_many(menu_items)
         .exec(&txn)
         .await?;
@@ -125,11 +128,13 @@ async fn read_menu(
     menu_model: menu::Model,
     db_conn: &DatabaseConnection,
 ) -> Result<Menu, HttpError> {
+    info!("menu items reading");
     let menu_items = menu_model
         .find_related(menu_data::Entity)
         .order_by_asc(menu_data::Column::Order)
         .all(db_conn)
         .await?;
+    info!("dishes reading");
     let dishes: Vec<_> = menu_items
         .load_one(dish::Entity, db_conn)
         .await?
@@ -137,6 +142,7 @@ async fn read_menu(
         .flatten()
         .collect();
     assert_eq!(menu_items.len(), dishes.len());
+    info!("products reading");
     let products = dishes
         .load_many_to_many(product::Entity, dish_product::Entity, db_conn)
         .await?;
@@ -169,7 +175,10 @@ async fn read_menu(
 }
 
 async fn generate_menu(amount: u8, db_conn: &DatabaseConnection) -> Result<Menu, HttpError> {
+    info!("menu generation");
+    info!("dishes reading");
     let dishes = dish::Entity::find().all(db_conn).await?;
+    info!("products reading");
     let products = dishes
         .load_many_to_many(product::Entity, dish_product::Entity, db_conn)
         .await?;
@@ -210,6 +219,7 @@ async fn generate_menu(amount: u8, db_conn: &DatabaseConnection) -> Result<Menu,
         }
     }
 
+    info!("schemes reading");
     let schemes: Result<Vec<DishesScheme>, _> = dishes_scheme::Entity::find()
         .all(db_conn)
         .await?
