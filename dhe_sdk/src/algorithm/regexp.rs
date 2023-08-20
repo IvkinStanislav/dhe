@@ -1,49 +1,54 @@
+use std::collections::HashSet;
+
 /// Regular expression with support for '.' and '*'
 pub fn is_match(input: String, pattern: String) -> bool {
-    let mut state_indexes = vec![0]; // TODO to set
-    let mut pattern_state: Vec<(char, Vec<usize>)> = vec![];
+    let mut state_machine = HashSet::new();
+    state_machine.insert(0);
+    let mut graph: Vec<(char, Vec<usize>)> = vec![];
 
     for ch in pattern.chars() {
         if ch == '*' {
-            let next_num = pattern_state.len();
+            let next_num = graph.len();
             let current_num = next_num - 1;
             let prev_num = current_num.checked_sub(1);
 
-            if let Some(last) = pattern_state.last_mut() {
+            if let Some(last) = graph.last_mut() {
                 (*last).1.push(current_num);
             }
 
             if let Some(prev_num) = prev_num {
-                let prev = unsafe{ pattern_state.get_unchecked_mut(prev_num) };
+                let prev = unsafe{ graph.get_unchecked_mut(prev_num) };
                 (*prev).1.push(next_num);
             }
 
+            if state_machine.contains(&current_num) {
+                state_machine.insert(next_num);
+            }
         } else {
-            let next_num = pattern_state.len() + 1;
-            pattern_state.push((ch, vec![next_num]));
+            let next_num = graph.len() + 1;
+            graph.push((ch, vec![next_num]));
         }
     }
-    println!("state_indexes: {state_indexes:?}");
-    println!("pattern_state: {pattern_state:?}");
+    println!("state_machine: {state_machine:?}");
+    println!("graph: {graph:?}");
 
     for ch in input.chars() {
-        while let Some(state_index) = state_indexes.pop() {
-            if let Some(state) = pattern_state.get(state_index) {
-                if state.0 == ch || state.0 == '.' {
-                    state_indexes.extend_from_slice(&state.1);
-                    break;
-                } else if !state_indexes.is_empty() {
+        let mut new_state_machine = HashSet::new();
+        for &state in &state_machine {
+            if let Some(vertex) = graph.get(state) {
+                if vertex.0 != ch && vertex.0 != '.' {
                     continue;
-                } else {
-                    return false;
                 }
-            } else {
-                return false;
+                for &next_state in &vertex.1 {
+                    new_state_machine.insert(next_state);
+                }
             }
         }
+        state_machine.clear();
+        state_machine = new_state_machine;
     }
-
-    true
+    println!("state_machine_after`: {state_machine:?}");
+    state_machine.contains(&graph.len())
 }
 
 #[cfg(test)]
@@ -75,6 +80,13 @@ mod tests {
     fn is_match_4() {
         let input = "aab".to_owned();
         let pattern = "c*a*b".to_owned();
+        assert!(is_match(input, pattern));
+    }
+
+    #[test]
+    fn is_match_5() {
+        let input = "baabbbaccbccacacc".to_owned();
+        let pattern = "c*..b*a*a.*a..*c".to_owned();
         assert!(is_match(input, pattern));
     }
 }
