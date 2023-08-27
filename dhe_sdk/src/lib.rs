@@ -1,7 +1,7 @@
+pub mod algorithm;
 pub mod keyboard;
 pub mod language;
 pub mod translate;
-pub mod algorithm;
 
 use language::LanguageError;
 use thiserror::Error;
