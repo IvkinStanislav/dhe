@@ -56,7 +56,7 @@ pub async fn get_product(
         .one(&state.db_conn)
         .await?;
     let Some(product) = product else {
-        return Err(HttpError::NotFound)
+        return Err(HttpError::NotFound);
     };
 
     let product = product.into();
@@ -89,7 +89,7 @@ pub async fn update_product(
         .one(&state.db_conn)
         .await?;
     let Some(product) = product else {
-        return Err(HttpError::NotFound)
+        return Err(HttpError::NotFound);
     };
     let mut product: product::ActiveModel = product.into();
 

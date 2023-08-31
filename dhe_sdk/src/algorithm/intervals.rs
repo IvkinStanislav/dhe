@@ -1,38 +1,36 @@
 use std::collections::HashMap;
 
 /// Get Intervals Between Identical Elements
-/// Input: arr = [2,1,3,1,2,3,3]
+/// Input: [2,1,3,1,2,3,3]
 /// Output: [4,2,7,2,4,4,5]
 pub fn get_distances(arr: Vec<i32>) -> Vec<i64> {
+    let mut result = vec![0; arr.len()];
     let mut counter = HashMap::new();
+
     for (index, &value) in arr.iter().enumerate() {
         counter
             .entry(value)
-            .and_modify(|e: &mut Vec<usize>| {
-                e.push(index);
+            .and_modify(|(len, sum): &mut (usize, usize)| {
+                result[index] += (*len * index - *sum) as i64;
+                *len += 1;
+                *sum += index;
             })
-            .or_insert(vec![index]);
+            .or_insert((1, index));
     }
 
-    arr.iter()
-        .enumerate()
-        .map(|(index, value)| {
-            counter
-                .get(value)
-                .unwrap()
-                .iter()
-                .map(|&other| {
-                    // index.abs_diff(other) as i64
-                    let diff = if index >= other {
-                        index - other
-                    } else {
-                        other - index
-                    };
-                    diff as i64
-                })
-                .sum()
-        })
-        .collect()
+    counter.clear();
+    for (index, &value) in arr.iter().enumerate().rev() {
+        counter
+            .entry(value)
+            .and_modify(|(len, sum): &mut (usize, usize)| {
+                result[index] += (*len * index - *sum) as i64;
+                *len += 1;
+                *sum += index;
+            })
+            .or_insert((1, index));
+    }
+
+    result
 }
 
 #[cfg(test)]

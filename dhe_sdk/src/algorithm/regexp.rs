@@ -11,7 +11,7 @@ pub fn is_match(input: String, pattern: String) -> bool {
     let pattern: Vec<_> = pattern.chars().collect();
     for i in 0..pattern.len() {
         let current = pattern[i];
-        let next = pattern.get(i+1).copied();
+        let next = pattern.get(i + 1).copied();
         if current != '*' {
             let current_state = graph.len();
             let next_state = current_state + 1;
@@ -22,7 +22,7 @@ pub fn is_match(input: String, pattern: String) -> bool {
 
                 for &jumper in &jumpers {
                     if let Some(no_star) = graph.get_mut(jumper) {
-                        (*no_star).1.push(next_state);
+                        no_star.1.push(next_state);
                     }
                 }
             } else {
@@ -39,7 +39,7 @@ pub fn is_match(input: String, pattern: String) -> bool {
             state_machine.insert(r);
         }
     }
-    
+
     for ch in input.chars() {
         let mut new_state_machine = HashSet::new();
         for &state in &state_machine {

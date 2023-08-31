@@ -76,7 +76,7 @@ pub async fn get_dish(
         .one(&state.db_conn)
         .await?;
     let Some(dish) = dish else {
-        return Err(HttpError::NotFound)
+        return Err(HttpError::NotFound);
     };
     let products = dish
         .find_related(product::Entity)
@@ -133,7 +133,7 @@ pub async fn update_dish(
         .one(&state.db_conn)
         .await?;
     let Some(dish) = dish else {
-        return Err(HttpError::NotFound)
+        return Err(HttpError::NotFound);
     };
     let mut dish: dish::ActiveModel = dish.into();
 
@@ -184,7 +184,7 @@ pub async fn add_product_to_dish(
         .one(&state.db_conn)
         .await?;
     let Some(dish_id) = dish_id else {
-        return Err(HttpError::NotFound)
+        return Err(HttpError::NotFound);
     };
 
     let product_id: Option<u64> = product::Entity::find()
@@ -195,7 +195,7 @@ pub async fn add_product_to_dish(
         .one(&state.db_conn)
         .await?;
     let Some(product_id) = product_id else {
-        return Err(HttpError::NotFound)
+        return Err(HttpError::NotFound);
     };
 
     let dish_product = dish_product::ActiveModel {
@@ -224,7 +224,7 @@ pub async fn delete_product_from_dish(
         .one(&state.db_conn)
         .await?;
     let Some(dish_id) = dish_id else {
-        return Err(HttpError::NotFound)
+        return Err(HttpError::NotFound);
     };
 
     let product_id: Option<u64> = product::Entity::find()
@@ -235,7 +235,7 @@ pub async fn delete_product_from_dish(
         .one(&state.db_conn)
         .await?;
     let Some(product_id) = product_id else {
-        return Err(HttpError::NotFound)
+        return Err(HttpError::NotFound);
     };
 
     dish_product::Entity::delete_many()
