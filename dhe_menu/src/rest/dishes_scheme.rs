@@ -22,7 +22,7 @@ pub struct DishesScheme {
 }
 
 impl DishesScheme {
-    const DISHES_SCHEME_DELIMITER: &str = "+";
+    const DISHES_SCHEME_DELIMITER: &'static str = "+";
 
     fn scheme_to_string(data: Vec<u8>) -> String {
         data.iter()

@@ -21,7 +21,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let db_dir = dirs::home_dir()
         .and_then(|p| p.to_str().map(|p| p.to_string()))
-        .unwrap_or(String::new());
+        .unwrap_or_default();
     let db_conn_str = format!("sqlite:{db_dir}/{DB_NAME}");
 
     let config = StateConfig { db_conn_str };
