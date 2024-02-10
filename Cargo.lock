@@ -890,6 +890,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dhe_worker"
+version = "0.1.0"
+dependencies = [
+ "dhe_sdk",
+ "dhe_sdk_macros",
+ "tracing",
+]
+
+[[package]]
 name = "digest"
 version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"

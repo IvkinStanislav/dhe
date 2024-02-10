@@ -4,7 +4,10 @@ members = [
     "dhe_translate",
     "dhe_sdk",
     "dhe_sdk_macros",
+    "dhe_worker",
 ]
+
+workspace.resolver = "2"
 
 [workspace.dependencies]
 strum = { version = "0.24", features = ["derive"] }

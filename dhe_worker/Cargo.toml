@@ -1,0 +1,9 @@
+[package]
+name = "dhe_worker"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dhe_sdk = { path = "../dhe_sdk" }
+dhe_sdk_macros = { path = "../dhe_sdk_macros" }
+tracing = { workspace = true }
