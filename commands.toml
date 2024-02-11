@@ -1,0 +1,7 @@
+[[commands]]
+name = "gnome-terminal"
+args = ["--tab", "--working-directory=./dev"]
+
+[[commands]]
+name = "firefox"
+

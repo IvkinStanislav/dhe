@@ -1,3 +1,12 @@
+[workspace.package]
+version = "0.0.1"
+authors = ["Stas Ivkin <109stas@gmail.com>"]
+license = "MIT"
+edition = "2021"
+repository = "https://github.com/IvkinStanislav/dhe"
+rust-version = "1.76"
+readme = "README.md"
+
 [workspace]
 members = [
     "dhe_menu",
@@ -7,9 +16,8 @@ members = [
     "dhe_worker",
 ]
 
-workspace.resolver = "2"
-
 [workspace.dependencies]
+serde = "1.0"
 strum = { version = "0.24", features = ["derive"] }
 thiserror = "1.0.38"
 time = { version = "0.3.22", features = ["formatting", "parsing"] }

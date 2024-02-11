@@ -6,4 +6,6 @@ edition = "2021"
 [dependencies]
 dhe_sdk = { path = "../dhe_sdk" }
 dhe_sdk_macros = { path = "../dhe_sdk_macros" }
+serde = { workspace = true }
+toml = "0.8.10"
 tracing = { workspace = true }
