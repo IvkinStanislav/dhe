@@ -1028,26 +1028,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "dhe_translate"
-version = "0.1.0"
-dependencies = [
- "arboard",
- "dhe_sdk",
- "dhe_sdk_macros",
- "notify-rust",
- "tokio",
- "tracing",
-]
-
-[[package]]
 name = "dhe_worker"
 version = "0.1.0"
 dependencies = [
+ "arboard",
  "clap 4.5.0",
  "dhe_sdk",
  "dhe_sdk_macros",
  "homedir",
+ "notify-rust",
  "serde",
+ "thiserror",
+ "tokio",
  "toml",
  "tracing",
 ]

@@ -13,5 +13,5 @@ How to install:
 2) `chmod +x ./add_rights`
 3) `sudo ./add_rights`
 4) Reboot
-5) `cargo build -r`
-6) `./target/release/dhe_translate`
+5) `cargo install --path ./dhe_worker`
+6) `dhe_worker`

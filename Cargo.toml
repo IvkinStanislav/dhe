@@ -10,7 +10,6 @@ readme = "README.md"
 [workspace]
 members = [
     "dhe_menu",
-    "dhe_translate",
     "dhe_sdk",
     "dhe_sdk_macros",
     "dhe_worker",

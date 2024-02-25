@@ -2,21 +2,16 @@ use arboard::{Clipboard, GetExtLinux, LinuxClipboardKind};
 use dhe_sdk::{
     keyboard::{Key, KeyboardEmulator, KeyboardListener},
     language::{Language, LanguageDetector},
-    setup_logs,
     translate::translate,
 };
 use notify_rust::Notification;
 use std::{error::Error, time::Duration};
 use tokio::time::sleep;
-use tracing::Level;
 
 const TRANSLATE_TO_NOTIFY_ACTION: &str = "TRANSLATE_TO_NOTIFY";
 const TRANSLATE_TO_PASTE_ACTION: &str = "TRANSLATE_TO_PASTE";
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    setup_logs(Level::INFO);
-
+pub async fn start_translate_loop() -> Result<(), Box<dyn Error>> {
     let mut listener = KeyboardListener::new()?;
     use Key::*;
     listener.register_action(TRANSLATE_TO_NOTIFY_ACTION, &[LAlt, Q]);
@@ -35,7 +30,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 TRANSLATE_TO_PASTE_ACTION => {
                     translate_to_paste_action(&mut clipboard, &mut emulator, &detector).await?
                 }
-                _ => panic!("Unregistered action!"),
+                _ => panic!("unregistered keyboard action"),
             }
         }
     }
