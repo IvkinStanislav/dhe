@@ -1,5 +1,4 @@
 use evdev::{EventType, InputEvent, InputEventKind};
-use strum::EnumIter;
 
 use super::KeyboardError;
 
@@ -42,7 +41,19 @@ impl KeyboardState {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, EnumIter)]
+#[derive(
+    Debug,
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    strum::EnumIter,
+    strum::EnumString,
+    strum::Display,
+)]
 #[repr(u8)]
 pub enum Key {
     A = 0,

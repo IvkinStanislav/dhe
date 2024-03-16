@@ -26,8 +26,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let commands_config = CliCommandsConfig::parse(commands_file).unwrap();
     if init {
-        commands_config.execute_init_commands().unwrap();
+        commands_config.execute_bash_init_commands().unwrap();
     }
 
-    start_translate_loop().await
+    start_translate_loop(commands_config.translate_params()?.into_iter()).await?;
+
+    Ok(())
 }

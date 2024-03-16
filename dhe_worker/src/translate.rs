@@ -1,3 +1,4 @@
+use anyhow::bail;
 use arboard::{Clipboard, GetExtLinux, LinuxClipboardKind};
 use dhe_sdk::{
     keyboard::{Key, KeyboardEmulator, KeyboardListener},
@@ -5,17 +6,46 @@ use dhe_sdk::{
     translate::translate,
 };
 use notify_rust::Notification;
-use std::{error::Error, time::Duration};
+use std::time::Duration;
 use tokio::time::sleep;
+use tracing::warn;
 
-const TRANSLATE_TO_NOTIFY_ACTION: &str = "TRANSLATE_TO_NOTIFY";
-const TRANSLATE_TO_PASTE_ACTION: &str = "TRANSLATE_TO_PASTE";
+pub struct TranslateParam<N> {
+    pub name: N,
+    pub keys: Vec<Key>,
+}
 
-pub async fn start_translate_loop() -> Result<(), Box<dyn Error>> {
+impl<N: AsRef<str>> TranslateParam<N> {
+    pub fn validation(&self) -> Result<(), anyhow::Error> {
+        if self.name.as_ref() != TRANSLATE_TO_NOTIFY_ACTION
+            && self.name.as_ref() != TRANSLATE_TO_PASTE_ACTION
+        {
+            bail!("unknown action of the translator")
+        }
+
+        if self.keys.is_empty() {
+            bail!("empty list of keys")
+        }
+
+        Ok(())
+    }
+}
+
+// TODO listener.register_action(TRANSLATE_TO_NOTIFY_ACTION, &[LAlt, Q]);
+// TODO listener.register_action(TRANSLATE_TO_PASTE_ACTION, &[LAlt, W]);
+const TRANSLATE_TO_NOTIFY_ACTION: &str = "translate-to-notify";
+const TRANSLATE_TO_PASTE_ACTION: &str = "translate-to-paste";
+
+pub async fn start_translate_loop<N, P>(params: P) -> Result<(), anyhow::Error>
+where
+    P: Iterator<Item = TranslateParam<N>>,
+    N: Into<String>,
+{
     let mut listener = KeyboardListener::new()?;
-    use Key::*;
-    listener.register_action(TRANSLATE_TO_NOTIFY_ACTION, &[LAlt, Q]);
-    listener.register_action(TRANSLATE_TO_PASTE_ACTION, &[LAlt, W]);
+
+    for TranslateParam { name, keys } in params {
+        listener.register_action(name, &keys);
+    }
 
     let mut emulator = KeyboardEmulator::new()?;
     let mut clipboard = Clipboard::new()?;
@@ -30,7 +60,7 @@ pub async fn start_translate_loop() -> Result<(), Box<dyn Error>> {
                 TRANSLATE_TO_PASTE_ACTION => {
                     translate_to_paste_action(&mut clipboard, &mut emulator, &detector).await?
                 }
-                _ => panic!("unregistered keyboard action"),
+                data => warn!("unregistered keyboard action {data}"),
             }
         }
     }
@@ -39,7 +69,7 @@ pub async fn start_translate_loop() -> Result<(), Box<dyn Error>> {
 async fn translate_to_notify_action(
     clipboard: &mut Clipboard,
     detector: &LanguageDetector,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), anyhow::Error> {
     const LANGUAGE_TO_NOTIFY: Language = Language::Ru;
     const ALTERNATIVE_LANGUAGE_TO_NOTIFY: Language = Language::En;
 
@@ -68,7 +98,7 @@ async fn translate_to_paste_action(
     clipboard: &mut Clipboard,
     emulator: &mut KeyboardEmulator,
     detector: &LanguageDetector,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<(), anyhow::Error> {
     const LANGUAGE_TO_PASTE: Language = Language::En;
     const ALTERNATIVE_LANGUAGE_TO_PASTE: Language = Language::Ru;
 
