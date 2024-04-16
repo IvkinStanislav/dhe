@@ -8,7 +8,7 @@ use dhe_sdk::{
 use notify_rust::Notification;
 use std::time::Duration;
 use tokio::time::sleep;
-use tracing::warn;
+use tracing::{error, warn};
 
 pub struct TranslateParam<N> {
     pub name: N,
@@ -31,8 +31,6 @@ impl<N: AsRef<str>> TranslateParam<N> {
     }
 }
 
-// TODO listener.register_action(TRANSLATE_TO_NOTIFY_ACTION, &[LAlt, Q]);
-// TODO listener.register_action(TRANSLATE_TO_PASTE_ACTION, &[LAlt, W]);
 const TRANSLATE_TO_NOTIFY_ACTION: &str = "translate-to-notify";
 const TRANSLATE_TO_PASTE_ACTION: &str = "translate-to-paste";
 
@@ -52,17 +50,33 @@ where
     let detector = LanguageDetector::new();
 
     loop {
-        if let Some(action) = listener.get_action()? {
-            match action {
-                TRANSLATE_TO_NOTIFY_ACTION => {
-                    translate_to_notify_action(&mut clipboard, &detector).await?
-                }
-                TRANSLATE_TO_PASTE_ACTION => {
-                    translate_to_paste_action(&mut clipboard, &mut emulator, &detector).await?
-                }
-                data => warn!("unregistered keyboard action {data}"),
+        if let Err(err) =
+            translate_step(&mut listener, &mut emulator, &mut clipboard, &detector).await
+        {
+            error!("translate error: {err}")
+        }
+    }
+}
+
+async fn translate_step(
+    listener: &mut KeyboardListener,
+    emulator: &mut KeyboardEmulator,
+    clipboard: &mut Clipboard,
+    detector: &LanguageDetector,
+) -> Result<(), anyhow::Error> {
+    if let Some(action) = listener.get_action()? {
+        match action {
+            TRANSLATE_TO_NOTIFY_ACTION => translate_to_notify_action(clipboard, detector).await,
+            TRANSLATE_TO_PASTE_ACTION => {
+                translate_to_paste_action(clipboard, emulator, detector).await
+            }
+            data => {
+                warn!("unregistered keyboard action {data}");
+                Ok(())
             }
         }
+    } else {
+        Ok(())
     }
 }
 
