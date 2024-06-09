@@ -164,7 +164,7 @@ impl KeyboardWriter {
             .map_err(|err| KeyboardError::Io("create virtual device".to_string(), err))?
             .name("dhe_keyboard")
             .input_id(evdev::InputId::new(evdev::BusType::BUS_USB, 1, 1, 1))
-            .with_keys(&AttributeSet::from_iter(Key::iter().map(|key| key.into())))
+            .with_keys(&AttributeSet::from_iter(Key::iter().map(evdev::Key::from)))
             .map_err(|err| KeyboardError::Io("set up keys into virtual device".to_string(), err))?
             .build()
             .map_err(|err| KeyboardError::Io("build virtual device".to_string(), err))?;
