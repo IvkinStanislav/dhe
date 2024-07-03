@@ -12,7 +12,10 @@ use serde::Deserialize;
 use thiserror::Error;
 use tracing::error;
 
-use crate::translate::TranslateParam;
+use crate::action_listener::ActionListenerParam;
+
+/// Default command file name in $HOME directory
+const DEFAULT_CLI_COMMAND_FILE_NAME: &str = "dhe_commands.toml";
 
 #[derive(Error, Debug)]
 pub enum CliCommandError {
@@ -44,7 +47,7 @@ impl CliCommandsConfig {
         toml::from_str(&commands_data).map_err(|_| WrongCommandsFormat(path))
     }
 
-    pub fn execute_bash_init_commands(&self) -> Result<(), CliCommandError> {
+    pub fn execute_bash_starter_commands(&self) -> Result<(), CliCommandError> {
         for command in self.by_handler(CliCommandHandler::BashStarter) {
             sleep(Duration::from_millis(300));
             let CliCommand { name, args, .. } = command;
@@ -58,28 +61,24 @@ impl CliCommandsConfig {
         Ok(())
     }
 
-    pub fn translate_params(&self) -> Result<Vec<TranslateParam<&str>>, CliCommandError> {
-        self.by_handler(CliCommandHandler::Translator)
+    pub fn action_listener_params(
+        &self,
+    ) -> Result<Vec<ActionListenerParam<&str>>, CliCommandError> {
+        self.by_handler(CliCommandHandler::ActionListener)
             .map(|c| {
-                let param = TranslateParam {
+                let err_gen = |err: String| {
+                    CliCommandError::ExecuteCommand(c.name.clone(), c.args.clone(), err)
+                };
+
+                let param = ActionListenerParam {
                     name: c.name.as_str(),
                     keys: c
                         .args
                         .iter()
-                        .map(|a| {
-                            Key::from_str(a).map_err(|err| {
-                                CliCommandError::ExecuteCommand(
-                                    c.name.clone(),
-                                    c.args.clone(),
-                                    err.to_string(),
-                                )
-                            })
-                        })
+                        .map(|a| Key::from_str(a).map_err(|err| err_gen(err.to_string())))
                         .collect::<Result<Vec<_>, _>>()?,
                 };
-                param.validation().map_err(|err| {
-                    CliCommandError::ExecuteCommand(c.name.clone(), c.args.clone(), err.to_string())
-                })?;
+                param.validate().map_err(|err| err_gen(err.to_string()))?;
                 Ok(param)
             })
             .collect()
@@ -91,7 +90,7 @@ impl CliCommandsConfig {
 
     fn default_cli_command_file_name() -> Option<PathBuf> {
         match homedir::get_my_home() {
-            Ok(Some(home)) => Some(home.join("dhe_commands.toml")),
+            Ok(Some(home)) => Some(home.join(DEFAULT_CLI_COMMAND_FILE_NAME)),
             _ => None,
         }
     }
@@ -99,8 +98,8 @@ impl CliCommandsConfig {
 
 #[derive(Deserialize)]
 pub struct CliCommand {
-    name: String,
     handler: CliCommandHandler,
+    name: String,
     #[serde(default)]
     args: Vec<String>,
 }
@@ -109,5 +108,5 @@ pub struct CliCommand {
 #[serde(rename_all = "kebab-case")]
 pub enum CliCommandHandler {
     BashStarter,
-    Translator,
+    ActionListener,
 }

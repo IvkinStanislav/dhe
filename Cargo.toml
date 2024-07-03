@@ -9,6 +9,7 @@ readme = "README.md"
 
 [workspace]
 members = [
+    "dhe_gui",
     "dhe_menu",
     "dhe_sdk",
     "dhe_sdk_macros",
@@ -16,6 +17,7 @@ members = [
 ]
 
 [workspace.dependencies]
+anyhow = "1.0.86"
 serde = "1.0"
 strum = { version = "0.24", features = ["derive"] }
 thiserror = "1.0.38"

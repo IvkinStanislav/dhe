@@ -1,11 +1,11 @@
+mod action_listener;
 mod cli_command;
-mod translate;
 
 use clap::Parser;
 use dhe_sdk::setup_logs;
 use tracing::Level;
 
-use crate::{cli_command::CliCommandsConfig, translate::start_translate_loop};
+use crate::{action_listener::start_action_listener_loop, cli_command::CliCommandsConfig};
 
 #[derive(Parser)]
 #[clap(version, about, long_about)]
@@ -26,10 +26,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let commands_config = CliCommandsConfig::parse(commands_file).unwrap();
     if init {
-        commands_config.execute_bash_init_commands().unwrap();
+        commands_config.execute_bash_starter_commands().unwrap();
     }
 
-    start_translate_loop(commands_config.translate_params()?.into_iter()).await?;
+    start_action_listener_loop(commands_config.action_listener_params()?.into_iter()).await?;
 
     Ok(())
 }

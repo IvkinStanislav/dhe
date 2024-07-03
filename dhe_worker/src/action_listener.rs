@@ -6,19 +6,20 @@ use dhe_sdk::{
     translate::translate,
 };
 use notify_rust::Notification;
-use std::time::Duration;
+use std::{process::Command, time::Duration};
 use tokio::time::sleep;
 use tracing::{error, warn};
 
-pub struct TranslateParam<N> {
+pub struct ActionListenerParam<N> {
     pub name: N,
     pub keys: Vec<Key>,
 }
 
-impl<N: AsRef<str>> TranslateParam<N> {
-    pub fn validation(&self) -> Result<(), anyhow::Error> {
+impl<N: AsRef<str>> ActionListenerParam<N> {
+    pub fn validate(&self) -> Result<(), anyhow::Error> {
         if self.name.as_ref() != TRANSLATE_TO_NOTIFY_ACTION
             && self.name.as_ref() != TRANSLATE_TO_PASTE_ACTION
+            && self.name.as_ref() != OPEN_GUI_ACTION
         {
             bail!("unknown action of the translator")
         }
@@ -33,15 +34,16 @@ impl<N: AsRef<str>> TranslateParam<N> {
 
 const TRANSLATE_TO_NOTIFY_ACTION: &str = "translate-to-notify";
 const TRANSLATE_TO_PASTE_ACTION: &str = "translate-to-paste";
+const OPEN_GUI_ACTION: &str = "open-gui";
 
-pub async fn start_translate_loop<N, P>(params: P) -> Result<(), anyhow::Error>
+pub async fn start_action_listener_loop<N, P>(params: P) -> Result<(), anyhow::Error>
 where
-    P: Iterator<Item = TranslateParam<N>>,
+    P: Iterator<Item = ActionListenerParam<N>>,
     N: Into<String>,
 {
     let mut listener = KeyboardListener::new()?;
 
-    for TranslateParam { name, keys } in params {
+    for ActionListenerParam { name, keys } in params {
         listener.register_action(name, &keys);
     }
 
@@ -50,15 +52,14 @@ where
     let detector = LanguageDetector::new();
 
     loop {
-        if let Err(err) =
-            translate_step(&mut listener, &mut emulator, &mut clipboard, &detector).await
+        if let Err(err) = action_step(&mut listener, &mut emulator, &mut clipboard, &detector).await
         {
             error!("translate error: {err}")
         }
     }
 }
 
-async fn translate_step(
+async fn action_step(
     listener: &mut KeyboardListener,
     emulator: &mut KeyboardEmulator,
     clipboard: &mut Clipboard,
@@ -70,6 +71,7 @@ async fn translate_step(
             TRANSLATE_TO_PASTE_ACTION => {
                 translate_to_paste_action(clipboard, emulator, detector).await
             }
+            OPEN_GUI_ACTION => open_gui(),
             data => {
                 warn!("unregistered keyboard action {data}");
                 Ok(())
@@ -83,7 +85,7 @@ async fn translate_step(
 async fn translate_to_notify_action(
     clipboard: &mut Clipboard,
     detector: &LanguageDetector,
-) -> Result<(), anyhow::Error> {
+) -> anyhow::Result<()> {
     const LANGUAGE_TO_NOTIFY: Language = Language::Ru;
     const ALTERNATIVE_LANGUAGE_TO_NOTIFY: Language = Language::En;
 
@@ -112,7 +114,7 @@ async fn translate_to_paste_action(
     clipboard: &mut Clipboard,
     emulator: &mut KeyboardEmulator,
     detector: &LanguageDetector,
-) -> Result<(), anyhow::Error> {
+) -> anyhow::Result<()> {
     const LANGUAGE_TO_PASTE: Language = Language::En;
     const ALTERNATIVE_LANGUAGE_TO_PASTE: Language = Language::Ru;
 
@@ -142,5 +144,10 @@ async fn translate_to_paste_action(
         clipboard.set_text(clipboard_text)?;
     }
 
+    Ok(())
+}
+
+fn open_gui() -> anyhow::Result<()> {
+    Command::new("dhe_gui").spawn()?;
     Ok(())
 }

@@ -1,18 +1,12 @@
 [package]
-name = "dhe_worker"
+name = "dhe_gui"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 anyhow = { workspace = true }
-arboard = "3.2.0"
-clap = { version = "4.5.0", features = ["derive"] }
 dhe_sdk = { path = "../dhe_sdk" }
 dhe_sdk_macros = { path = "../dhe_sdk_macros" }
-homedir = "0.2.1"
+iced = "0.12.1"
 notify-rust = "4.8.0"
-serde = { workspace = true }
-thiserror = { workspace = true }
-tokio = { workspace = true }
-toml = "0.8.10"
 tracing = { workspace = true }
