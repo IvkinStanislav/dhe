@@ -13,6 +13,7 @@ members = [
     "dhe_sdk",
     "dhe_sdk_macros",
     "dhe_worker",
+    "hints",
 ]
 resolver = "2"
 
