@@ -4,7 +4,6 @@ authors = ["Stas Ivkin <109stas@gmail.com>"]
 license = "MIT"
 edition = "2021"
 repository = "https://github.com/IvkinStanislav/dhe"
-rust-version = "1.76"
 readme = "README.md"
 
 [workspace]
@@ -15,12 +14,13 @@ members = [
     "dhe_sdk_macros",
     "dhe_worker",
 ]
+resolver = "2"
 
 [workspace.dependencies]
 anyhow = "1.0.86"
 serde = "1.0"
 strum = { version = "0.24", features = ["derive"] }
 thiserror = "1.0.38"
-time = { version = "0.3.22", features = ["formatting", "parsing"] }
+time = { version = "0.3.37", features = ["formatting", "parsing"] }
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1.37"

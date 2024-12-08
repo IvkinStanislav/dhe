@@ -6,7 +6,7 @@ edition = "2021"
 [dependencies]
 evdev = { version = "0.12.1", features = ["tokio"] }
 lingua = { version = "1.5.0", default-features = false, features = ["russian", "english"] }
-mio = "0.8.7"
+mio = { version = "1", features = ["os-poll", "net"] }
 reqwest = "0.11"
 scraper = "0.16.0"
 strum = { workspace = true }
